@@ -52,3 +52,7 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+
+
+# para rodar o servidor, use: python app.py
+# e para ativar o ngrok, use: ngrok http 5001
