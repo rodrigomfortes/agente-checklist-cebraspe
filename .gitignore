@@ -39,6 +39,7 @@ env.bak/
 venv.bak/
 .venv/
 .env
+*.env
 
 # ===== BANCO DE DADOS =====
 # SQLite databases
