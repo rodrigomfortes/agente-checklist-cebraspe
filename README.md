@@ -1,14 +1,36 @@
 # Agente Checklist CEBRASPE
 
-Este projeto tem como objetivo criar um **agente de IA via WhatsApp** que auxilia na **organização e controle do checklist de materiais** da CEBRASPE.
+Sistema de banco de dados para gerenciar checklists de materiais administrativos da CEBRASPE.
 
-## Funcionalidades:
-- Recebimento e validação de fotos do material.
-- Acompanhamento de status dos itens do checklist.
-- Comunicação automatizada via WhatsApp.
+## Como rodar
 
-## Como Rodar o Projeto
+1. **Clone o projeto**
+```bash
+git clone <url-do-repo>
+cd agente-checklist-cebraspe
+```
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/agente-checklist-cebraspe.git
+2. **Instale as dependências**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Inicializar o banco (só uma vez)**
+```bash
+python -c "from database import init_database; init_database()"
+```
+Rodar isso no terminal
+
+4. **Usar o sistema**
+```python
+from database import ChecklistDatabase
+ChecklistDatabase.criar_checklist_dia1("minha_sessao")
+```
+
+## Estrutura
+
+- `database/models.py` - Tabelas do banco
+- `database/database.py` - Operações (criar, buscar, atualizar)
+- `database/__init__.py` - Imports
+
+Pronto! 🚀

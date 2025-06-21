@@ -1,0 +1,27 @@
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"
+reportIncompatibleMethodOverride = false
+reportOptionalMemberAccess = false
+reportGeneralTypeIssues = false
+
+[tool.pylint.messages_control]
+disable = [
+    "too-many-instance-attributes",
+    "too-few-public-methods",
+    "import-error",
+    "no-member"
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]  # Line too long
+
+# Ignora warnings do SQLAlchemy
+[tool.mypy]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+ignore_missing_imports = true 
