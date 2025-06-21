@@ -1,0 +1,202 @@
+# ===================================
+# GITIGNORE - PROJETO CHECKLIST CEBRASPE
+# ===================================
+
+# ===== PYTHON =====
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== AMBIENTE VIRTUAL =====
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env
+
+# ===== BANCO DE DADOS =====
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+
+# Database backups
+*.backup
+*.bak
+database/backups/
+
+# ===== IDEs E EDITORES =====
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ===== SISTEMA OPERACIONAL =====
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ===== LOGS E TEMPORÁRIOS =====
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# ===== TESTES =====
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ===== DOCUMENTAÇÃO =====
+# Sphinx documentation
+docs/_build/
+
+# ===== ESPECÍFICO DO PROJETO =====
+# Arquivos de configuração local
+config.local.py
+settings.local.py
+.env.local
+.env.production
+
+# Uploads de fotos (se houver pasta local)
+uploads/
+fotos/
+images/temp/
+
+# Backups locais
+backup_*
+*.backup
+
+# Arquivos de desenvolvimento
+dev_*
+test_data/
+sandbox/
+
+# ===== DEPENDÊNCIAS =====
+# npm
+node_modules/
+package-lock.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# ===== SEGURANÇA =====
+# Chaves e credenciais
+*.key
+*.pem
+*.p12
+*.crt
+secrets.json
+credentials.json
+
+# ===== DIVERSOS =====
+# Thumbnails
+*.thumbnail
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Compiled Java class files
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs
+hs_err_pid*
