@@ -3,6 +3,9 @@ from typing import List, Literal, Union
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
+from typing import Union
+from pydantic import BaseModel
+
 
 
 load_dotenv()
@@ -21,26 +24,31 @@ class ResetarChecklist(BaseModel):
     """Ação para quando o usuário pede para reiniciar ou limpar a conferência."""
     action: Literal["resetar_checklist"] = "resetar_checklist"
 
+class IniciarDia(BaseModel):
+    """Ação para iniciar um novo dia de checklist (ex: Dia 2)."""
+    action: Literal["iniciar_dia"] = "iniciar_dia"
+    dia: int = Field(..., description="Número do dia que o usuário deseja iniciar. Ex: 2")
 
-PossibleActions = Union[MarcarConferido, VerificarFaltantes, ResetarChecklist]
+
+
+PossibleActions = Union[MarcarConferido, VerificarFaltantes, ResetarChecklist, IniciarDia]
 
 # --- Lógica do LangChain ---
 
 def criar_parser_langchain():
     """
-    Configura o LLM da OpenAI para usar nossas ações Pydantic como "ferramentas".
-    O LLM será forçado a retornar um JSON que corresponde a uma dessas estruturas.
+    Configura o LLM da OpenAI para usar nossas ações Pydantic como ferramentas.
     """
+    from langchain_core.output_parsers.openai_tools import PydanticToolsParser
 
     llm = ChatOpenAI(model="gpt-4o", temperature=0)
-    
-   
-    structured_llm = llm.with_structured_output(PossibleActions)
-    
+
+    structured_llm = (
+        llm.bind_tools([MarcarConferido, VerificarFaltantes, ResetarChecklist,IniciarDia])
+        | PydanticToolsParser(tools=[MarcarConferido, VerificarFaltantes, ResetarChecklist, IniciarDia])
+    )
+
     return structured_llm
-
-
-llm_parser = criar_parser_langchain()
 
 def parse_mensagem_usuario(texto: str) -> BaseModel:
     """
@@ -58,7 +66,8 @@ def parse_mensagem_usuario(texto: str) -> BaseModel:
     Mensagem do usuário: "{texto}"
     """
     
-    resultado_acao = llm_parser.invoke(prompt)
+    resultado_acao = criar_parser_langchain().invoke(prompt)
+
     
     return resultado_acao
 
@@ -89,3 +98,4 @@ if __name__ == '__main__':
     
     print(f"\n[Teste 3] Mensagem: '{mensagem3}'")
     print("Saída JSON:", acao_detectada3.model_dump_json(indent=2))
+

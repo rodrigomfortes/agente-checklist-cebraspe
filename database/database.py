@@ -22,6 +22,8 @@ engine = create_engine(
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
+
 def init_database():
     """
     Inicializa o banco de dados criando todas as tabelas
@@ -211,4 +213,35 @@ class ChecklistDatabase:
                 setattr(checklist, 'timestamp_fim', func.now())
                 db.commit()
                 return checklist
-            return None 
+            return None
+
+    @staticmethod
+    def listar_faltantes(sessao_id: str) -> list:
+        """
+        Retorna uma lista dos campos que ainda estão como não preenchidos (presente=False) no checklist dia 1
+        """
+        with get_db() as db:
+            checklist = db.query(ChecklistDia1).filter(ChecklistDia1.sessao_id == sessao_id).first()
+            if not checklist:
+                return []
+
+            faltantes = []
+            for coluna in ChecklistDia1.__table__.columns:
+                if "_presente" in coluna.name:
+                    if getattr(checklist, coluna.name) is False:
+                        campo = coluna.name.replace("_presente", "")
+                        faltantes.append(campo)
+            return faltantes
+
+    @staticmethod
+    def resetar_checklist(sessao_id: str):
+        """
+        Reseta todos os campos _presente para False no checklist do dia 1
+        """
+        with get_db() as db:
+            checklist = db.query(ChecklistDia1).filter(ChecklistDia1.sessao_id == sessao_id).first()
+            if checklist:
+                for coluna in ChecklistDia1.__table__.columns:
+                    if "_presente" in coluna.name:
+                        setattr(checklist, coluna.name, False)
+                db.commit()
