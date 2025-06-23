@@ -1,4 +1,3 @@
-# app.py
 import base64
 import asyncio
 from flask import Flask, request, jsonify
@@ -9,6 +8,7 @@ import json
 from datetime import datetime
 from processar_imagem import processar_imagem_recebida
 from services.whatsapp import enviar_mensagem_whatsapp
+import openai
 
 app = Flask(__name__)
 
@@ -45,98 +45,33 @@ def iniciar_checklist(sessao_id: str, dia=1):
     return "iniciado"
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return "<h1>Bot Checklist CEBRASPE ativo!</h1>"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
-
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    print("\n📩 --- Novo Webhook Recebido ---")
+def gerar_resposta_ia(texto_usuario, checklist, fluxo, dia):
+    """
+    Usa a OpenAI para interpretar o comando do usuário e gerar uma resposta baseada no checklist atual.
+    """
+    itens_status = []
+    for item in fluxo:
+        status = checklist.get(f"{item}_presente", False)
+        itens_status.append(f"{item.replace('_', ' ')}: {'OK' if status else 'FALTANDO'}")
+    prompt = f"""
+    Você é um assistente de checklist. O usuário enviou: '{texto_usuario}'.
+    O checklist do dia {dia} está assim:
+{chr(10).join(itens_status)}
+Responda de forma objetiva e clara, em português, dizendo o que está faltando ou se está tudo certo.
+    """
     try:
-        dados = request.get_json()
-        print(f"📦 Dados recebidos:\n{json.dumps(dados, indent=2, ensure_ascii=False)}")
-
-        if dados.get("event") != "messages.upsert":
-            return jsonify({"status": "ignorado"}), 200
-
-        mensagem = dados["data"]["message"]
-        remetente = dados["data"]["key"]["remoteJid"]
-        timestamp = str(dados["data"].get("messageTimestamp", datetime.utcnow().timestamp()))
-        sessao_id = remetente
-
-        if "conversation" in mensagem:
-            texto = mensagem["conversation"].strip().lower()
-            print(f"💬 Texto de {remetente}: {texto}")
-
-            if texto.startswith("iniciar"):
-                dia = 1 if "2" not in texto else 2
-                status = iniciar_checklist(sessao_id, dia=dia)
-                if status == "iniciado":
-                    fluxo = FLUXO_DIA1 if dia == 1 else FLUXO_DIA2
-                    proximo_item = fluxo[0].replace("_", " ")
-                    asyncio.run(enviar_mensagem_whatsapp(remetente, f"✅ Checklist iniciado! Envie a *foto de {proximo_item}* com legenda correspondente."))
-                else:
-                    asyncio.run(enviar_mensagem_whatsapp(remetente, "ℹ️ O checklist já está em andamento. Continue enviando as imagens normalmente!"))
-                return jsonify({"status": f"checklist {status}"}), 200
-            
-            
-
-        if "imageMessage" in mensagem:
-            image_data = mensagem["imageMessage"]
-            file_url = image_data.get("url")
-            caption = image_data.get("caption", "documento_nao_identificado").lower().replace(" ", "_")
-            if not file_url:
-                return jsonify({"erro": "URL da imagem não encontrada"}), 400
-
-            estado = estado_fluxo.get(sessao_id)
-            if not estado:
-                asyncio.run(enviar_mensagem_whatsapp(remetente, "⚠️ Você ainda não iniciou o checklist. Envie 'iniciar' para começar."))
-                return jsonify({"status": "sem checklist ativo"}), 200
-
-            fluxo = FLUXO_DIA1 if estado["dia"] == 1 else FLUXO_DIA2
-            esperado = fluxo[estado["indice"]]
-
-            if caption != esperado:
-                asyncio.run(enviar_mensagem_whatsapp(remetente, f"⚠️ Esperado: *{esperado.replace('_', ' ')}*. Envie a imagem correta."))
-                return jsonify({"status": "aguardando item correto"}), 200
-
-            try:
-                resposta = requests.get(file_url)
-                if resposta.status_code != 200:
-                    raise Exception(f"Erro HTTP {resposta.status_code} ao baixar imagem")
-                foto_base64 = base64.b64encode(resposta.content).decode("utf-8")
-
-                ChecklistDatabase.atualizar_item_dia1(
-                    sessao_id=sessao_id,
-                    campo=caption,
-                    presente=True,
-                    foto=foto_base64
-                )
-
-                print(f"✅ Imagem '{caption}' salva com sucesso para {sessao_id}!")
-
-                estado["indice"] += 1
-                if estado["indice"] < len(fluxo):
-                    proximo = fluxo[estado["indice"]].replace("_", " ")
-                    asyncio.run(enviar_mensagem_whatsapp(remetente, f"📸 Agora envie a *foto de {proximo}* com legenda correspondente."))
-                else:
-                    asyncio.run(enviar_mensagem_whatsapp(remetente, "🎉 Checklist finalizado! Obrigado pelo envio completo."))
-                    del estado_fluxo[sessao_id]
-
-                return jsonify({"status": "imagem processada"}), 200
-
-            except Exception as e:
-                print(f"❌ Erro ao processar imagem: {e}")
-                return jsonify({"erro": str(e)}), 500
-
-        return jsonify({"status": "mensagem não tratada"}), 200
-
+        resposta = openai.ChatCompletion.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "Você é um assistente de checklist."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return resposta.choices[0].message.content.strip()
     except Exception as e:
-        print(f"❌ Erro no webhook: {e}")
-        return jsonify({"erro": str(e)}), 500
-
-
-if __name__ == "__main__":
-    init_database()
-    app.run(host="0.0.0.0", port=5001, debug=True)
+        print(f"Erro OpenAI: {e}")
+        return "❌ Erro ao consultar IA. Tente novamente mais tarde."
