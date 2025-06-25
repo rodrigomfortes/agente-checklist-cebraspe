@@ -68,7 +68,7 @@ class ChecklistDatabase:
     @staticmethod
     def criar_checklist_dia1(sessao_id: str, aplicador_nome: Optional[str] = None, local_aplicacao: Optional[str] = None):
         """
-        Cria um novo checklist para o dia 1
+        Cria checklist com todos os campos _presente iniciados como False
         """
         with get_db() as db:
             checklist = ChecklistDia1(
@@ -77,15 +77,22 @@ class ChecklistDatabase:
                 local_aplicacao=local_aplicacao,
                 status_checklist='iniciado'
             )
+
+            # Inicializa todos os campos _presente como False
+            for coluna in ChecklistDia1.__table__.columns:
+                if "_presente" in coluna.name:
+                    setattr(checklist, coluna.name, False)
+
             db.add(checklist)
             db.commit()
             db.refresh(checklist)
             return checklist.id
+
     
     @staticmethod
     def criar_checklist_dia2(sessao_id: str, aplicador_nome: Optional[str] = None, local_aplicacao: Optional[str] = None):
         """
-        Cria um novo checklist para o dia 2
+        Cria checklist com todos os campos _presente iniciados como False
         """
         with get_db() as db:
             checklist = ChecklistDia2(
@@ -94,11 +101,17 @@ class ChecklistDatabase:
                 local_aplicacao=local_aplicacao,
                 status_checklist='iniciado'
             )
+
+            # Inicializa todos os campos _presente como False
+            for coluna in ChecklistDia2.__table__.columns:
+                if "_presente" in coluna.name:
+                    setattr(checklist, coluna.name, False)
+
             db.add(checklist)
             db.commit()
             db.refresh(checklist)
             return checklist.id
-    
+
     @staticmethod
     def atualizar_item_dia1(sessao_id: str, campo: str, presente: Optional[bool] = None, foto: Optional[str] = None, observacao: Optional[str] = None):
         """
@@ -144,46 +157,29 @@ class ChecklistDatabase:
     @staticmethod
     def buscar_checklist_dia1(sessao_id: str):
         """
-        Busca um checklist do dia 1 por sessão
-        Retorna um dicionário com os dados para evitar problemas de sessão
+        Busca um checklist do dia 1 por sessão e retorna todos os campos, inclusive os itens
         """
         with get_db() as db:
             checklist = db.query(ChecklistDia1).filter(ChecklistDia1.sessao_id == sessao_id).first()
             if checklist:
-                # Converte para dicionário para evitar problemas de sessão
-                return {
-                    'id': checklist.id,
-                    'sessao_id': checklist.sessao_id,
-                    'aplicador_nome': checklist.aplicador_nome,
-                    'local_aplicacao': checklist.local_aplicacao,
-                    'status_checklist': checklist.status_checklist,
-                    'data_aplicacao': checklist.data_aplicacao,
-                    'timestamp_inicio': checklist.timestamp_inicio,
-                    'timestamp_fim': checklist.timestamp_fim
-                }
+                resultado = {}
+                for coluna in ChecklistDia1.__table__.columns:
+                    resultado[coluna.name] = getattr(checklist, coluna.name)
+                return resultado
             return None
+
     
     @staticmethod
     def buscar_checklist_dia2(sessao_id: str):
-        """
-        Busca um checklist do dia 2 por sessão
-        Retorna um dicionário com os dados para evitar problemas de sessão
-        """
         with get_db() as db:
             checklist = db.query(ChecklistDia2).filter(ChecklistDia2.sessao_id == sessao_id).first()
             if checklist:
-                # Converte para dicionário para evitar problemas de sessão
-                return {
-                    'id': checklist.id,
-                    'sessao_id': checklist.sessao_id,
-                    'aplicador_nome': checklist.aplicador_nome,
-                    'local_aplicacao': checklist.local_aplicacao,
-                    'status_checklist': checklist.status_checklist,
-                    'data_aplicacao': checklist.data_aplicacao,
-                    'timestamp_inicio': checklist.timestamp_inicio,
-                    'timestamp_fim': checklist.timestamp_fim
-                }
+                resultado = {}
+                for coluna in ChecklistDia2.__table__.columns:
+                    resultado[coluna.name] = getattr(checklist, coluna.name)
+                return resultado
             return None
+
     
     @staticmethod
     def finalizar_checklist_dia1(sessao_id: str):
@@ -244,4 +240,18 @@ class ChecklistDatabase:
                 for coluna in ChecklistDia1.__table__.columns:
                     if "_presente" in coluna.name:
                         setattr(checklist, coluna.name, False)
+                db.commit()
+
+    @staticmethod
+    def resetar_checklist_dia2(sessao_id: str):
+        """
+        Reseta todos os campos _presente para False no checklist do dia 2
+        """
+        with get_db() as db:
+            checklist = db.query(ChecklistDia2).filter(ChecklistDia2.sessao_id == sessao_id).first()
+            if checklist:
+                for coluna in ChecklistDia2.__table__.columns:
+                    if "_presente" in coluna.name:
+                        setattr(checklist, coluna.name, False)
+                setattr(checklist, 'status_checklist', 'iniciado')
                 db.commit()
