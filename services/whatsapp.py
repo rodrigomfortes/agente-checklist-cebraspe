@@ -4,7 +4,7 @@ async def enviar_mensagem_whatsapp(telefone: str, mensagem: str):
     url = "http://localhost:8080/message/sendText/cebraspe-checklist"
     headers = {
         "Content-Type": "application/json",
-        "apikey": "CD7ED21646FF-4B71-B90E-9E14892277BA"
+        "apikey": "1EFCE2CB0D36-4D75-B0D4-8B1DF9DCDF7B"
     }
     payload = {
         "number": telefone,
