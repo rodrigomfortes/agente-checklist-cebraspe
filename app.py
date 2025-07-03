@@ -101,7 +101,7 @@ def iniciar_checklist(sessao_id: str, dia=1):
 
 @app.route("/", methods=["GET"])
 def home():
-    return "<h1>✅ Bot Checklist CEBRASPE está ativo!</h1>"
+    return "<h1>✅ Bot Checklist CEBRASPE está ativo josé!</h1>"
 
 
 @app.route("/webhook", methods=["POST"])
@@ -123,7 +123,6 @@ def webhook():
             print(f"💬 {remetente}: {texto}")
 
             # 🌞 Detecta início de checklist
-                        # 🌞 Detecta início de checklist
             if "iniciar" in texto:
                 if "dia 2" in texto:
                     if not ChecklistDatabase.buscar_checklist_dia2(sessao_id):

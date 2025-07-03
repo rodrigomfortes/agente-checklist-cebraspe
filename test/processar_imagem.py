@@ -1,6 +1,6 @@
 import requests
 import base64
-from salvar_imagem import salvar_imagem_sqlite
+from teste_salvar_imagem import salvar_imagem_sqlite
 
 def baixar_imagem_base64(url: str) -> str:
     response = requests.get(url)
