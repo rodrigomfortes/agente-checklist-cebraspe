@@ -64,7 +64,7 @@ router
   .get('/', async (req, res) => {
     res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
-      message: 'Welcome to the Evolution API, it is working!',
+      message: 'Welcome to the Evolution API, it is working boyyyyy!',
       version: packageJson.version,
       clientName: process.env.DATABASE_CONNECTION_CLIENT_NAME,
       manager: !serverConfig.DISABLE_MANAGER ? `${req.protocol}://${req.get('host')}/manager` : undefined,
